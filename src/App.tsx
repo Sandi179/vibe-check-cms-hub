@@ -14,9 +14,9 @@ import SignupPage from "./pages/SignupPage";
 import Dashboard from "./pages/Dashboard";
 import ContentFeed from "./pages/ContentFeed";
 import PostEditor from "./pages/PostEditor";
-import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import UserManagement from "./pages/UserManagement";
+import Settings from "./pages/Settings";
 
 // Layout
 import MainLayout from "./layouts/MainLayout";
@@ -42,7 +42,7 @@ const App = () => (
                 <Route path="content" element={<ContentFeed />} />
                 <Route path="post/new" element={<PostEditor />} />
                 <Route path="post/edit/:id" element={<PostEditor />} />
-                <Route path="profile" element={<Profile />} />
+                <Route path="settings" element={<Settings />} />
                 <Route path="users" element={<UserManagement />} />
               </Route>
             </Route>

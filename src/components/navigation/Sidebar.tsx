@@ -18,7 +18,7 @@ const Sidebar = ({ onClose }: SidebarProps) => {
     { label: 'Dashboard', icon: Home, path: '/app' },
     { label: 'Content Feed', icon: FileText, path: '/app/content' },
     { label: 'Create Post', icon: Plus, path: '/app/post/new' },
-    { label: 'Profile', icon: User, path: '/app/profile' },
+    { label: 'Settings', icon: User, path: '/app/settings' },
   ];
   
   // Add admin-specific navigation items
