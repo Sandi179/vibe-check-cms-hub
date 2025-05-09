@@ -26,10 +26,12 @@ import RichTextEditor from '@/components/editor/RichTextEditor';
 import { posts } from '@/data/mockData';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 const PostEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Find post if editing an existing one
   const existingPost = id ? posts.find(post => post.id === id) : null;
@@ -49,6 +51,21 @@ const PostEditor = () => {
   const [metaDescription, setMetaDescription] = useState(existingPost?.metaDescription || '');
   const [slug, setSlug] = useState(existingPost?.slug || '');
   const [coverImage, setCoverImage] = useState(existingPost?.coverImage || '');
+  const [imageUrl, setImageUrl] = useState(existingPost?.coverImage || '');
+  
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
   
   // Handle tag addition
   const handleAddTag = () => {
@@ -76,7 +93,14 @@ const PostEditor = () => {
       metaTitle,
       metaDescription,
       slug,
-      coverImage
+      coverImage: imageUrl
+    });
+    
+    toast({
+      title: existingPost ? "Post updated" : "Post created",
+      description: existingPost 
+        ? "Your post has been successfully updated." 
+        : "Your new post has been successfully created.",
     });
     
     // Mock success message and redirect
@@ -86,13 +110,17 @@ const PostEditor = () => {
   };
   
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <motion.form 
+      onSubmit={handleSubmit} 
+      className="space-y-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Header */}
       <motion.div 
         className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        variants={itemVariants}
       >
         <div>
           <h1 className="text-3xl font-bold mb-2">
@@ -127,12 +155,10 @@ const PostEditor = () => {
         {/* Left Column - Main Content */}
         <motion.div 
           className="lg:col-span-8 space-y-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          variants={itemVariants}
         >
           {/* Title */}
-          <div className="space-y-2">
+          <motion.div className="space-y-2" variants={itemVariants}>
             <Label htmlFor="title">Post Title</Label>
             <Input 
               id="title" 
@@ -141,52 +167,54 @@ const PostEditor = () => {
               placeholder="Enter post title..."
               className="text-xl font-medium"
             />
-          </div>
+          </motion.div>
           
-          {/* Cover Image */}
-          <div className="space-y-2">
-            <Label>Cover Image</Label>
-            {coverImage ? (
-              <div className="relative rounded-lg overflow-hidden">
-                <img 
-                  src={coverImage}
-                  alt="Cover"
-                  className="w-full h-64 object-cover"
-                />
-                <Button 
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  type="button"
-                  onClick={() => setCoverImage('')}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <div className="border border-dashed rounded-lg p-8 text-center">
-                <div className="flex flex-col items-center">
-                  <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground mb-4">Drag and drop an image here, or click to select</p>
+          {/* Cover Image URL */}
+          <motion.div className="space-y-2" variants={itemVariants}>
+            <Label>Cover Image URL</Label>
+            <div className="space-y-4">
+              <Input 
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+              />
+              
+              {imageUrl && (
+                <div className="relative rounded-lg overflow-hidden">
+                  <img 
+                    src={imageUrl}
+                    alt="Cover"
+                    className="w-full h-64 object-cover"
+                    onError={() => {
+                      toast({
+                        title: "Image Error",
+                        description: "Could not load the image from the provided URL.",
+                        variant: "destructive"
+                      });
+                    }}
+                  />
                   <Button 
-                    type="button" 
-                    onClick={() => setCoverImage('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=500')}
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    type="button"
+                    onClick={() => setImageUrl('')}
                   >
-                    Upload Image
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </motion.div>
           
           {/* Rich Text Editor */}
-          <div className="space-y-2">
+          <motion.div className="space-y-2" variants={itemVariants}>
             <Label htmlFor="content">Content</Label>
             <RichTextEditor initialContent={content} onChange={setContent} />
-          </div>
+          </motion.div>
           
           {/* Excerpt */}
-          <div className="space-y-2">
+          <motion.div className="space-y-2" variants={itemVariants}>
             <Label htmlFor="excerpt">Excerpt</Label>
             <Textarea 
               id="excerpt" 
@@ -195,22 +223,19 @@ const PostEditor = () => {
               placeholder="A brief summary of your post..."
               rows={3}
             />
-          </div>
+          </motion.div>
           
         </motion.div>
         
         {/* Right Column - Settings */}
         <motion.div 
           className="lg:col-span-4 space-y-8"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          variants={itemVariants}
         >
           <Tabs defaultValue="publish">
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-2 w-full">
               <TabsTrigger value="publish">Publish</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
-              <TabsTrigger value="tags">Tags</TabsTrigger>
             </TabsList>
             
             {/* Publish Tab */}
@@ -269,6 +294,58 @@ const PostEditor = () => {
                       </PopoverContent>
                     </Popover>
                   )}
+                </div>
+                
+                {/* Tags */}
+                <div className="space-y-2">
+                  <Label htmlFor="tags">Tags</Label>
+                  <div className="flex space-x-2">
+                    <Input 
+                      id="tags" 
+                      value={tagInput} 
+                      onChange={(e) => setTagInput(e.target.value)}
+                      placeholder="Add a tag..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                    />
+                    <Button 
+                      type="button" 
+                      size="icon"
+                      onClick={handleAddTag}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  {/* Tags List */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {tags.map((tag, index) => (
+                      <motion.div 
+                        key={index}
+                        className="bg-secondary text-secondary-foreground text-sm px-3 py-1 rounded-full flex items-center"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                      >
+                        {tag}
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-4 w-4 ml-1"
+                          onClick={() => handleRemoveTag(tag)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </motion.div>
+                    ))}
+                    {tags.length === 0 && (
+                      <p className="text-muted-foreground text-sm">No tags added yet</p>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Visibility */}
@@ -346,87 +423,10 @@ const PostEditor = () => {
                 </div>
               </div>
             </TabsContent>
-            
-            {/* Tags Tab */}
-            <TabsContent value="tags" className="space-y-4 mt-4">
-              <div className="bg-card border rounded-lg p-4 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tags">Tags</Label>
-                  <div className="flex space-x-2">
-                    <Input 
-                      id="tags" 
-                      value={tagInput} 
-                      onChange={(e) => setTagInput(e.target.value)}
-                      placeholder="Add a tag..."
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                    />
-                    <Button 
-                      type="button" 
-                      size="icon"
-                      onClick={handleAddTag}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Tags List */}
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag, index) => (
-                    <div 
-                      key={index} 
-                      className="bg-secondary text-secondary-foreground text-sm px-3 py-1 rounded-full flex items-center"
-                    >
-                      {tag}
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-4 w-4 ml-1"
-                        onClick={() => handleRemoveTag(tag)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                  {tags.length === 0 && (
-                    <p className="text-muted-foreground text-sm">No tags added yet</p>
-                  )}
-                </div>
-                
-                {/* Popular Tags */}
-                <div>
-                  <h3 className="text-sm font-medium mb-2">Popular Tags</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['Design', 'Development', 'UI/UX', 'Marketing', 'Tutorial'].map((tag) => (
-                      <Button 
-                        key={tag} 
-                        variant="outline" 
-                        size="sm" 
-                        type="button"
-                        className="text-xs"
-                        onClick={() => {
-                          if (!tags.includes(tag)) {
-                            setTags([...tags, tag]);
-                          }
-                        }}
-                      >
-                        {tag}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
           </Tabs>
         </motion.div>
       </div>
-    </form>
+    </motion.form>
   );
 };
 

@@ -14,10 +14,9 @@ import SignupPage from "./pages/SignupPage";
 import Dashboard from "./pages/Dashboard";
 import ContentFeed from "./pages/ContentFeed";
 import PostEditor from "./pages/PostEditor";
-import Templates from "./pages/Templates";
 import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import UserManagement from "./pages/UserManagement";
 
 // Layout
 import MainLayout from "./layouts/MainLayout";
@@ -37,14 +36,15 @@ const App = () => (
             <Route path="/signup" element={<SignupPage />} />
             
             {/* Protected Routes */}
-            <Route path="/app" element={<MainLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="content" element={<ContentFeed />} />
-              <Route path="post/new" element={<PostEditor />} />
-              <Route path="post/edit/:id" element={<PostEditor />} />
-              <Route path="templates" element={<Templates />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="settings" element={<Settings />} />
+            <Route path="/app" element={<PrivateRoute />}>
+              <Route element={<MainLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="content" element={<ContentFeed />} />
+                <Route path="post/new" element={<PostEditor />} />
+                <Route path="post/edit/:id" element={<PostEditor />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="users" element={<UserManagement />} />
+              </Route>
             </Route>
             
             <Route path="*" element={<NotFound />} />

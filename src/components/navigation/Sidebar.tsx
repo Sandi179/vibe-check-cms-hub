@@ -1,7 +1,8 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Layout, User, Settings, Plus, LogOut } from 'lucide-react';
+import { Home, FileText, User, Plus, LogOut, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getCurrentUser } from '@/services/AuthService';
 
 interface SidebarProps {
   onClose?: () => void;
@@ -9,15 +10,21 @@ interface SidebarProps {
 
 const Sidebar = ({ onClose }: SidebarProps) => {
   const location = useLocation();
+  const currentUser = getCurrentUser();
+  const isAdmin = currentUser?.role === 'Admin';
   
-  const navigationItems = [
+  // Base navigation items for all users
+  const baseNavigationItems = [
     { label: 'Dashboard', icon: Home, path: '/app' },
     { label: 'Content Feed', icon: FileText, path: '/app/content' },
     { label: 'Create Post', icon: Plus, path: '/app/post/new' },
-    { label: 'Templates', icon: Layout, path: '/app/templates' },
     { label: 'Profile', icon: User, path: '/app/profile' },
-    { label: 'Settings', icon: Settings, path: '/app/settings' }
   ];
+  
+  // Add admin-specific navigation items
+  const navigationItems = isAdmin 
+    ? [...baseNavigationItems, { label: 'Manage Users', icon: Users, path: '/app/users' }]
+    : baseNavigationItems;
 
   return (
     <div className="flex flex-col h-full">
@@ -38,48 +45,65 @@ const Sidebar = ({ onClose }: SidebarProps) => {
       </Link>
       
       {/* Navigation Links */}
-      <div className="mt-6 flex flex-col space-y-1 flex-1">
-        {navigationItems.map((item) => {
+      <motion.div 
+        className="mt-6 flex flex-col space-y-1 flex-1"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
+      >
+        {navigationItems.map((item, index) => {
           const isActive = 
             (item.path === '/app' && location.pathname === '/app') || 
             (item.path !== '/app' && location.pathname.startsWith(item.path));
           
           return (
-            <Link
+            <motion.div
               key={item.path}
-              to={item.path}
-              onClick={onClose}
-              className={`
-                flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
-                ${isActive 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'hover:bg-secondary text-foreground'}
-              `}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
             >
-              <item.icon className="h-5 w-5" />
-              <span>{item.label}</span>
-              {isActive && (
-                <motion.div
-                  className="absolute left-0 w-1 h-5 bg-accent rounded-r-full"
-                  layoutId="sidebar-indicator"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                />
-              )}
-            </Link>
+              <Link
+                to={item.path}
+                onClick={onClose}
+                className={`
+                  flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
+                  ${isActive 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'hover:bg-secondary text-foreground'}
+                `}
+              >
+                <item.icon className="h-5 w-5" />
+                <span>{item.label}</span>
+                {isActive && (
+                  <motion.div
+                    className="absolute left-0 w-1 h-5 bg-accent rounded-r-full"
+                    layoutId="sidebar-indicator"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                )}
+              </Link>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
       
       {/* Logout Button */}
-      <Link
-        to="/"
-        className="flex items-center space-x-3 px-4 py-3 mt-6 text-sm font-medium text-muted-foreground hover:text-destructive transition-colors"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
       >
-        <LogOut className="h-5 w-5" />
-        <span>Logout</span>
-      </Link>
+        <Link
+          to="/"
+          className="flex items-center space-x-3 px-4 py-3 mt-6 text-sm font-medium text-muted-foreground hover:text-destructive transition-colors"
+        >
+          <LogOut className="h-5 w-5" />
+          <span>Logout</span>
+        </Link>
+      </motion.div>
     </div>
   );
 };
