@@ -48,7 +48,8 @@ const UserManagement = () => {
     password: '',
     name: '',
     role: 'Contributor',
-    avatar: ''
+    avatar: '',
+    bio: '' // Added bio field to formData
   });
   
   const handleInputChange = (e) => {
@@ -76,6 +77,7 @@ const UserManagement = () => {
         email: formData.email,
         role: formData.role,
         avatar: formData.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=250',
+        bio: formData.bio || 'New user', // Adding bio with default value
         createdAt: new Date().toISOString()
       }
     };
@@ -94,7 +96,8 @@ const UserManagement = () => {
       password: '',
       name: '',
       role: 'Contributor',
-      avatar: ''
+      avatar: '',
+      bio: '' // Reset bio field
     });
   };
   
@@ -109,7 +112,8 @@ const UserManagement = () => {
             name: formData.name,
             email: formData.email,
             role: formData.role,
-            avatar: formData.avatar
+            avatar: formData.avatar,
+            bio: formData.bio || user.userData.bio || 'No bio available' // Ensure bio is preserved or defaulted
           }
         };
       }
@@ -253,6 +257,17 @@ const UserManagement = () => {
                     <SelectItem value="Contributor">Contributor</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Input
+                  id="bio"
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  placeholder="Short user biography"
+                />
               </div>
               
               <div className="grid gap-2">
@@ -436,6 +451,17 @@ const UserManagement = () => {
                     <SelectItem value="Contributor">Contributor</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="edit-bio">Bio</Label>
+                <Input
+                  id="edit-bio"
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  placeholder="Short user biography"
+                />
               </div>
               
               <div className="grid gap-2">

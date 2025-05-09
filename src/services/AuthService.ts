@@ -16,12 +16,12 @@ export const mockUsers = [
   {
     email: 'editor@example.com',
     password: 'password123',
-    userData: { ...currentUser, id: 'u-002', name: 'Maya Patel', role: 'Editor', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=250' }
+    userData: { ...currentUser, id: 'u-002', name: 'Maya Patel', role: 'Editor', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=250', bio: 'UX designer and color theory expert' }
   },
   {
     email: 'contributor@example.com',
     password: 'password123',
-    userData: { ...currentUser, id: 'u-003', name: 'Jamal Williams', role: 'Contributor', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=250' }
+    userData: { ...currentUser, id: 'u-003', name: 'Jamal Williams', role: 'Contributor', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=250', bio: 'Social media strategist and content creator' }
   },
   {
     email: 'demo@example.com',
