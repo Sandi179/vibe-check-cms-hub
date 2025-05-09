@@ -1,13 +1,47 @@
 
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogIn } from 'lucide-react';
+import { LogIn, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { login, mockUsers } from '@/services/AuthService';
+import { useToast } from '@/hooks/use-toast';
 
 const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      await login({ email, password });
+      toast({
+        title: "Login successful!",
+        description: "Welcome to ContentHub.",
+      });
+      navigate('/app');
+    } catch (error) {
+      setError('Invalid email or password');
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: "Invalid email or password. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-background">
       {/* Left Side - Form */}
@@ -38,7 +72,26 @@ const LoginPage = () => {
           <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
           <p className="text-muted-foreground mb-8">Please enter your details to sign in</p>
           
-          <form className="space-y-6">
+          <div className="bg-muted/20 p-4 rounded-lg mb-6">
+            <h3 className="font-medium mb-2">Mock Login Credentials</h3>
+            <div className="text-sm space-y-1">
+              {mockUsers.map((user, index) => (
+                <div key={index} className="grid grid-cols-2">
+                  <span>{user.email}</span>
+                  <span>{user.password}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                {error}
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 
@@ -46,6 +99,9 @@ const LoginPage = () => {
                 type="email" 
                 placeholder="name@example.com" 
                 className="w-full"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
             
@@ -58,12 +114,27 @@ const LoginPage = () => {
                 id="password" 
                 type="password" 
                 className="w-full"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
             
-            <Button type="submit" className="w-full gradient-bg">
-              <LogIn className="h-4 w-4 mr-2" />
-              Sign In
+            <Button type="submit" className="w-full gradient-bg" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing In...
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </>
+              )}
             </Button>
             
             <div className="relative my-6">

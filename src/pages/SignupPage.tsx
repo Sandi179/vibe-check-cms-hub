@@ -1,14 +1,55 @@
 
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useToast } from '@/hooks/use-toast';
+import { mockUsers } from '@/services/AuthService';
 
 const SignupPage = () => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!acceptedTerms) {
+      setError('You must accept the terms of service and privacy policy');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError('');
+
+    // Simulate API call
+    setTimeout(() => {
+      const existingUser = mockUsers.find(user => user.email === email);
+      
+      if (existingUser) {
+        setError('This email is already in use');
+        setIsLoading(false);
+      } else {
+        toast({
+          title: "Account created!",
+          description: "Welcome to ContentHub. Please sign in with your new account.",
+        });
+        navigate('/login');
+      }
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen flex bg-background">
       {/* Left Side - Form */}
@@ -39,15 +80,47 @@ const SignupPage = () => {
           <h1 className="text-3xl font-bold mb-2">Create an account</h1>
           <p className="text-muted-foreground mb-8">Enter your information to get started</p>
           
-          <form className="space-y-6">
+          <div className="bg-muted/20 p-4 rounded-lg mb-6">
+            <h3 className="font-medium mb-2">Mock Login Accounts</h3>
+            <p className="text-sm mb-2">These existing accounts are available for testing:</p>
+            <div className="text-xs space-y-1">
+              {mockUsers.map((user, index) => (
+                <div key={index} className="grid grid-cols-2">
+                  <span>{user.email}</span>
+                  <span>{user.password}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                {error}
+              </div>
+            )}
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First name</Label>
-                <Input id="firstName" placeholder="John" />
+                <Input 
+                  id="firstName" 
+                  placeholder="John" 
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last name</Label>
-                <Input id="lastName" placeholder="Doe" />
+                <Input 
+                  id="lastName" 
+                  placeholder="Doe" 
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
               </div>
             </div>
             
@@ -57,19 +130,32 @@ const SignupPage = () => {
                 id="email" 
                 type="email" 
                 placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" />
+              <Input 
+                id="password" 
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} 
+                required
+              />
               <p className="text-xs text-muted-foreground">
                 Password must be at least 8 characters long
               </p>
             </div>
             
             <div className="flex items-center space-x-2">
-              <Checkbox id="terms" />
+              <Checkbox 
+                id="terms" 
+                checked={acceptedTerms}
+                onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+              />
               <label
                 htmlFor="terms"
                 className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -85,9 +171,21 @@ const SignupPage = () => {
               </label>
             </div>
             
-            <Button type="submit" className="w-full gradient-bg">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Create Account
+            <Button type="submit" className="w-full gradient-bg" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creating Account...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Create Account
+                </>
+              )}
             </Button>
             
             <div className="relative my-6">

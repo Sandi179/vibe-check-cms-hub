@@ -1,20 +1,54 @@
 
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bell, Menu, X } from 'lucide-react';
+import { Bell, Menu, X, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Sidebar from '@/components/navigation/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTheme } from '@/context/ThemeProvider';
 import NotificationDropdown from '@/components/NotificationDropdown';
-import { currentUser } from '@/data/mockData';
+import { isLoggedIn, logout, getCurrentUser } from '@/services/AuthService';
+import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const MainLayout = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Check if user is logged in
+    if (!isLoggedIn()) {
+      navigate('/login');
+      return;
+    }
+    
+    // Get current user data
+    const userData = getCurrentUser();
+    setUser(userData);
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await logout();
+    toast({
+      title: "Logged out",
+      description: "You've been successfully logged out.",
+    });
+    navigate('/login');
+  };
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
@@ -83,13 +117,42 @@ const MainLayout = () => {
             </div>
             
             {/* User Profile */}
-            <Link to="/app/profile" className="flex items-center space-x-2">
-              <Avatar>
-                <AvatarImage src={currentUser.avatar} />
-                <AvatarFallback>{currentUser.name.substring(0, 2)}</AvatarFallback>
-              </Avatar>
-              <span className="hidden md:inline-block font-medium">{currentUser.name}</span>
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center space-x-2 cursor-pointer">
+                  <Avatar>
+                    <AvatarImage src={user.avatar} />
+                    <AvatarFallback>{user.name?.substring(0, 2) || "User"}</AvatarFallback>
+                  </Avatar>
+                  <span className="hidden md:inline-block font-medium">{user.name}</span>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="flex flex-col p-2 space-y-1">
+                  <p className="text-sm font-medium">{user.name}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <span className="px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full w-fit">
+                    {user.role}
+                  </span>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/app/profile" className="cursor-pointer">
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/app/settings" className="cursor-pointer">
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive cursor-pointer" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
         

@@ -3,8 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeProvider";
+import PrivateRoute from "@/components/PrivateRoute";
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             
+            {/* Protected Routes */}
             <Route path="/app" element={<MainLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="content" element={<ContentFeed />} />
